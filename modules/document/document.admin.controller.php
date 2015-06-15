@@ -100,8 +100,25 @@ class documentAdminController extends document
 				{
 					foreach($files as $val)
 					{
+						$isSwf = FALSE;
+
+						//fix /player/ to real filename
+						$file_id = (int) str_replace("/player/","",$val->uploaded_filename);
+
+						$cond = new stdClass();
+						$cond->idx = $file_id;
+						$output_swf = executeQuery('swftomp3.getswftomp3swffromid', $cond);
+						if(isset($output_swf->data->swf))
+						{
+							$output_swf = $output_swf->data->swf;
+							$isSwf = TRUE;
+						}
+						else
+						{
+							$output_swf = $val->uploaded_filename;
+						}
 						$file_info = array();
-						$file_info['tmp_name'] = $val->uploaded_filename;
+						$file_info['tmp_name'] = $output_swf;
 						$file_info['name'] = $val->source_filename;
 						$inserted_file = $oFileController->insertFile($file_info, $module_srl, $obj->document_srl, $val->download_count, true);
 						if($inserted_file && $inserted_file->toBool())
@@ -109,10 +126,24 @@ class documentAdminController extends document
 							// for image/video files
 							if($val->direct_download == 'Y')
 							{
-								$source_filename = substr($val->uploaded_filename,2);
-								$target_filename = substr($inserted_file->get('uploaded_filename'),2);
-								$obj->content = str_replace($source_filename, $target_filename, $obj->content);
-								// For binary files
+								if(!$isSwf){
+									$source_filename = substr($val->uploaded_filename,2);
+									$target_filename = substr($inserted_file->get('uploaded_filename'),2);
+									$obj->content = str_replace($source_filename, $target_filename, $obj->content);
+								}
+								else
+								{
+									// For swf files
+									$convertArgs = new stdClass();
+									$convertArgs->module_srl = $module_srl;
+									$convertArgs->uploaded_filename = $inserted_file->get('uploaded_filename');
+									$convertArgs->source_filename = $inserted_file->get('source_filename');
+									$convertArgs->upload_target_srl = $inserted_file->get('upload_target_srl');
+									$convertArgs->file_srl = $inserted_file->get('file_srl');
+									$oswftomp3Controller = getController('swftomp3');
+									$res = $oswftomp3Controller->triggerSwftomp3convertSWFfile($convertArgs,TRUE);
+									$obj->content = str_replace("/player/" . $file_id, $res->uploaded_filename, $obj->content);
+								}
 							}
 							else
 							{
