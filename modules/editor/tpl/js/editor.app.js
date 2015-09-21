@@ -1,3 +1,11 @@
+function getCkFormInstance(editor_sequence)
+{
+    var fo_obj = document.getElementById('ckeditor_instance_' + editor_sequence).parentNode;
+    while(fo_obj.nodeName != 'FORM') { fo_obj = fo_obj.parentNode; }
+    if(fo_obj.nodeName == 'FORM') return fo_obj;
+    return;
+}
+
 (function($){
 	"use strict";
 	var default_ckeconfig = {
@@ -60,6 +68,8 @@
 			var $contentField = $form.find(opts.content_field);
 			var data = $containerEl.data();
 			var editor_sequence = $containerEl.data().editorSequence;
+            var primary_key = $containerEl.data().editorPrimaryKeyName;
+            var fo_obj = getCkFormInstance(editor_sequence);
 
 			this.ckeconfig = $.extend({}, default_ckeconfig, opts.ckeconfig || {});
 
@@ -97,6 +107,41 @@
 
 				if(!opts.enableToolbar) instance.config.toolbar = [];
 			});
+
+            instance.on( 'fileUploadRequest', function( evt ) {
+                var fileLoader = evt.data.fileLoader,
+                    formData = new FormData(),
+                    xhr = fileLoader.xhr;
+
+                xhr.open( 'POST', current_url.setQuery('act','procFileUpload'), true );
+                formData.append( 'Filedata', fileLoader.file, fileLoader.fileName );
+                formData.append( 'mid', window.current_mid );
+                formData.append( 'act', "procFileUpload" );
+                formData.append( 'editor_sequence', fileLoader.uploadUrl );
+                fileLoader.xhr.send( formData );
+
+                evt.stop();
+            }, null, null, 4 );
+
+            instance.on( 'fileUploadResponse', function( evt ) {
+                evt.stop();
+
+                var data = evt.data,
+                    xhr = data.fileLoader.xhr,
+                    response = jQuery.parseJSON(xhr.responseText);
+
+                if ( response.error != 0 ) {
+                    // Error occurred during upload.
+                    data.message = response.message;
+                    evt.cancel();
+                } else {
+                    data.url = response.download_url;
+                    data.fileName = response.source_filename;
+
+                    fo_obj[primary_key].value = response.upload_target_srl;
+                    reloadUploader(response.editor_sequence);
+                }
+            } );
 
 			$containerEl.data('cke_instance', instance);
 

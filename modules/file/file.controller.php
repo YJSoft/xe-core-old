@@ -52,6 +52,7 @@ class fileController extends file
 		$this->add('source_filename',$output->get('source_filename'));
 		$this->add('download_url',$output->get('uploaded_filename'));
 		$this->add('upload_target_srl',$output->get('upload_target_srl'));
+		$this->add('editor_sequence',$editor_sequence);
 		if($output->error != '0') $this->stop($output->message);
 	}
 
