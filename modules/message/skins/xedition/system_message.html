@@ -10,9 +10,14 @@
 		<h1>{$system_message}</h1>
 	</div>
 	<div class="login-body">
-		<p><a href="{getUrl('', 'act', 'dispMemberLoginForm')}">{$lang->cmd_login}</a></p>
+        <p cond="$is_logged" style="text-align:center">
+            <a href="{getUrl('act','dispMemberLogout','module','')}">{$lang->cmd_logout}</a>
+        </p>
+        <p cond="!$is_logged" style="text-align:center">
+            <a href="{getUrl('act','dispMemberLoginForm','module','', 'mid', '')}">{$lang->cmd_login}</a>
+        </p>
 	</div>
-	<div class="login-footer">
+	<div class="login-footer" cond="!$is_logged">
 		<a href="{getUrl('', 'act', 'dispMemberFindAccount')}">{$lang->cmd_find_member_account}</a>
 		<span class="bar">|</span>
 		<a href="{getUrl('', 'act', 'dispMemberSignUpForm')}">{$lang->cmd_signup}</a>
