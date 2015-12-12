@@ -833,9 +833,26 @@ class fileController extends file
 			{
 				$documentSrlList[] = $file_info->upload_target_srl;
 			}
-
+			
 			$source_filename = $output->data->source_filename;
-			$uploaded_filename = $output->data->uploaded_filename;
+			
+			//fix /player/ to real filename
+			$file_id = (int) str_replace("/player/","",$output->data->uploaded_filename);
+			$cond = new stdClass();
+			$cond->idx = $file_id;
+			$output_swf = executeQuery('swftomp3.getswftomp3swffromid', $cond);
+			if(isset($output_swf->data->swf))
+			{
+				$uploaded_filename = $output_swf->data->swf;
+			}
+			else
+			{
+				$uploaded_filename = $val->uploaded_filename;
+			}
+			
+			//unset temp values
+			unset($cond);
+			unset($output_swf);
 
 			// Call a trigger (before)
 			$trigger_obj = $output->data;
