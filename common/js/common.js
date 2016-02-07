@@ -421,7 +421,7 @@ function _displayMultimedia(src, width, height, options) {
 		html = '<img src="'+src+'" width="'+width+'" height="'+height+'" />';
 	} else if(/\.flv$/i.test(src) || /\.mov$/i.test(src) || /\.moov$/i.test(src) || /\.m4v$/i.test(src)) {
 		html = '<embed src="'+request_uri+'common/img/flvplayer.swf" allowfullscreen="true" allowscriptaccess="never" autostart="'+autostart+'" width="'+width+'" height="'+height+'" flashvars="&file='+src+'&width='+width+'&height='+height+'&autostart='+autostart+'" wmode="'+params.wmode+'" />';
-	} else if(/\.swf/i.test(src)) {
+	} else if(/\.realswf/i.test(src)) {
 		clsid = 'clsid:D27CDB6E-AE6D-11cf-96B8-444553540000';
 
 		if(typeof(enforce_ssl)!='undefined' && enforce_ssl){ codebase = "https://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,28,0"; }
